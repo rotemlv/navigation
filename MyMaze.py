@@ -315,4 +315,6 @@ def my_even_simpler_heuristic(maze: Maze):
 
 mz = Maze(maze, jolly, 15, 8)
 rez = mz.search(min_manhattan_dist_plus_current_num_of_peirot_heuristic)
-print(len(rez))
+# if you use me prepare for a wall of text
+print_path(rez, mz.height,mz.width,2)
+print("Path cost (+1 added since we count nodes not \"hedges\")",len(rez))
