@@ -206,7 +206,7 @@ def best_heuristic(maze: Maze):
             curr_row, curr_col = curr[0]
             nxt_row, nxt_col = nxt[0]
             # add it
-            heuristic_sum += abs( curr_row - nxt_row) + abs(curr_col - nxt_col)
+            heuristic_sum += abs(curr_row - nxt_row) + abs(curr_col - nxt_col)
         # etcetra
         return heuristic_sum
     except ValueError:
@@ -225,7 +225,7 @@ def too_smart_for_its_own_good_heuristic(maze: Maze):
         # sort the dists by the manhattan distance
         dists.sort(key=lambda x: x[1])
         # take distance from rat to the closest food
-        heuristic_sum =0.6*dists[0][1]
+        heuristic_sum = 0.6 * dists[0][1]
         damnson = 0
         # tak distance from each food to the next food, visa vi distance from rat
         for i in range(len(dists) - 1):
@@ -233,7 +233,7 @@ def too_smart_for_its_own_good_heuristic(maze: Maze):
             curr_row, curr_col = curr[0]
             nxt_row, nxt_col = nxt[0]
             # add it
-            damnson += abs( curr_row - nxt_row) + abs(curr_col - nxt_col)
+            damnson += abs(curr_row - nxt_row) + abs(curr_col - nxt_col)
         # etcetra
         return heuristic_sum + 0.4 * damnson
     except ValueError:
@@ -273,15 +273,15 @@ def my_simple_heuristic(maze: Maze):
 
 
 def my_even_simpler_heuristic(maze: Maze):
-    cunt = 0
+    count = 0
     for i in range(len(maze.state)):
         if maze.state[i] != maze.goal[i]:
-            cunt+=1
-    return cunt
+            count += 1
+    return count
 
 
 mz = Maze(maze, jolly, 15, 8)
-rez = mz.search(min_manhattan_dist_plus_current_num_of_peirot_heuristic)
+rez = mz.search(my_even_simpler_heuristic)
 # if you use me prepare for a wall of text
-print_path_colorful_show_change_on_prev_board(rez, mz.height,mz.width,2)
-print("Path cost (+1 added since we count nodes not \"hedges\")",len(rez))
+# print_path_colorful_show_change_on_prev_board(rez, mz.height,mz.width,2)
+print("Path cost (+1 added since we count nodes not \"hedges\")", len(rez))
