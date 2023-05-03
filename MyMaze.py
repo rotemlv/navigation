@@ -112,40 +112,7 @@ def print_path(path: list, maze_height: int, maze_width: int, width: int):
         i += width
 
 
-def print_path_colorful(path: list, width: int):
-    i = 0
-    last_board = None
-    start_board = path[0]
-    while i < len(path):
-        # print all first lines in current width
-        boards = path[i: i + width]
-        for j in range(3):
-            for m, board in enumerate(boards):
-                if i and not m:
-                    last_board = path[i - 1]
-                # print current row
-                curr_idx = m + i
-                if board != start_board and (tmp := last_board.state[3 * j: 3 * j + 3]) != (
-                        curr := board.state[3 * j: 3 * j + 3]):
-                    # print the difference in red
-                    print(f"[", end='')
-                    for k, (elem, old_elem) in enumerate(zip(curr, tmp)):
-                        print(f"{elem}", sep='', end='') if elem == old_elem else \
-                            print(f"{PATH_B_COLOR}{elem}{Bcolors.ENDC}", sep='', end='')
-                        if k < 2:
-                            print(', ', sep='', end='')
-                        else:
-                            print("]", end='    ' if j != 1 or board.state == board.goal else ' -> ')
-                else:
-                    print(board.state[3 * j: 3 * j + 3], end='    ' if j != 1 or board.state == board.goal else ' -> ')
-                last_board = path[curr_idx]
-            print()
-
-        print()
-        i += width
-
-
-def print_path_colorful_show_change_on_prev_board(path: list, width: int):
+def print_path_colorful_show_change_on_prev_board(path: list, maze_height: int, maze_width: int, width: int):
     i = 0
     last_board = None
     path = path + [path[-1]]
@@ -153,7 +120,7 @@ def print_path_colorful_show_change_on_prev_board(path: list, width: int):
     while i < len(path):
         # print all first lines in current width
         boards = path[i: i + width + int(i == 0)]
-        for j in range(3):
+        for j in range(maze_height):
             for m, board in enumerate(boards):
                 if i and not m:
                     last_board = path[i - 1]
@@ -162,19 +129,19 @@ def print_path_colorful_show_change_on_prev_board(path: list, width: int):
                     continue
                 # print current row
                 curr_idx = m + i
-                if board != start_board and (tmp := last_board.state[3 * j: 3 * j + 3]) != (
-                        curr := board.state[3 * j: 3 * j + 3]):
+                if board != start_board and (tmp := last_board.state[maze_width * j: maze_width * j + maze_width]) != (
+                        curr := board.state[maze_width * j: maze_width * j + maze_width]):
                     # print the difference in red
                     print(f"[", end='')
                     for k, (elem, old_elem) in enumerate(zip(curr, tmp)):
-                        print(f"{elem}", sep='', end='') if elem == old_elem else \
-                            print(f"{PATH_B_COLOR}{old_elem}{Bcolors.ENDC}", sep='', end='')
-                        if k < 2:
-                            print(', ', sep='', end='')
+                        print(f"\'{elem}\'", sep='', end='') if elem == old_elem else \
+                            print(f"{PATH_B_COLOR}\'{old_elem}\'{Bcolors.ENDC}", sep='', end='')
+                        if k < maze_width - 1:
+                            print(f', ', sep='', end='')
                         else:
-                            print("]", end='    ' if j != 1 or last_board.state == board.goal else ' -> ')
+                            print("]", end='    ' if j != 1 or last_board.state == board.state else ' -> ')
                 else:
-                    print(board.state[3 * j:3 * j + 3],
+                    print(board.state[maze_width * j:maze_width * j + maze_width],
                           end='    ' if j != 1 or last_board.state == board.goal else ' -> ')
                 last_board = path[curr_idx]
             print()
@@ -188,9 +155,9 @@ maze = [
     '.', '#', '.', '.', '.', '.', '#', '.', '.', '#', '#', '#', '.', '.', '.',
     '.', '#', '#', '.', '.', '.', '.', '.', '#', '#', 'F', '#', '#', '.', '.',
     '.', '.', '#', '#', 'F', '#', '#', '.', '.', '.', '.', '.', '#', '.', '.',
-    '.', '.', '.', '#', '#', '#', 'F', '.', '.', '.', '.', '.', '#', '#', '.',
-    '.', '.', '.', '.', '#', '.', '.', '.', '.', '.', '.', '.', '.', '#', '.',
-    'S', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.',
+    '.', '.', '.', '#', '#', '#', 'F', '.', '#', '.', '.', '.', '#', '#', '.',
+    '.', '.', '.', '.', '#', '.', '.', '.', '#', '.', '.', '.', '.', '#', '.',
+    'S', '.', '.', '.', '.', '.', '.', '.', '.', '#', '.', '.', '.', '.', '.',
 ]
 
 jolly = [
@@ -199,9 +166,9 @@ jolly = [
     '.', '#', '.', '.', '.', '.', '#', '.', '.', '#', '#', '#', '.', '.', '.',
     '.', '#', '#', '.', '.', '.', '.', '.', '#', '#', '.', '#', '#', '.', '.',
     '.', '.', '#', '#', '.', '#', '#', '.', '.', '.', '.', '.', '#', '.', '.',
-    '.', '.', '.', '#', '#', '#', '.', '.', '.', '.', '.', '.', '#', '#', '.',
-    '.', '.', '.', '.', '#', '.', '.', '.', '.', '.', '.', '.', '.', '#', '.',
-    '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.',
+    '.', '.', '.', '#', '#', '#', '.', '.', '#', '.', '.', '.', '#', '#', '.',
+    '.', '.', '.', '.', '#', '.', '.', '.', '#', '.', '.', '.', '.', '#', '.',
+    '.', '.', '.', '.', '.', '.', '.', '.', '.', '#', '.', '.', '.', '.', '.',
 ]
 
 
@@ -316,5 +283,5 @@ def my_even_simpler_heuristic(maze: Maze):
 mz = Maze(maze, jolly, 15, 8)
 rez = mz.search(min_manhattan_dist_plus_current_num_of_peirot_heuristic)
 # if you use me prepare for a wall of text
-print_path(rez, mz.height,mz.width,2)
+print_path_colorful_show_change_on_prev_board(rez, mz.height,mz.width,2)
 print("Path cost (+1 added since we count nodes not \"hedges\")",len(rez))
