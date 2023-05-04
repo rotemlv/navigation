@@ -45,48 +45,35 @@ class Maze(Node):
     def get_neighbors_with_cost(self):
         # possible swaps stores new states after the swap
         possible_swaps = []
-        # where is zero:
-        z = self.state.index('S')
-        # left possible?
-        if z % self.width > 0:
-            if self.state[z - 1] != '#':
-                ls = self.state.copy()
-                ls[z], ls[z - 1] = ls[z - 1], ls[z]
-                if ls[z] == 'F':
-                    ls[z] = '.'
-                    if 'F' not in ls:
-                        ls[z - 1] = '.'
-                possible_swaps.append((Maze(ls, self.goal, self.width, self.height), 1))
-        # right possible?
-        if z % self.width < (self.width - 1):
-            if self.state[z + 1] != '#':
-                rs = self.state.copy()
-                rs[z], rs[z + 1] = rs[z + 1], rs[z]
-                if rs[z] == 'F':
-                    rs[z] = '.'
-                    if 'F' not in rs:
-                        rs[z + 1] = '.'
-                possible_swaps.append((Maze(rs, self.goal, self.width, self.height), 1))
-        # up possible?
-        if z > self.width - 1:
-            if self.state[z - self.width] != '#':
-                us = self.state.copy()
-                us[z], us[z - self.width] = us[z - self.width], us[z]
-                if us[z] == 'F':
-                    us[z] = '.'
-                    if 'F' not in us:
-                        us[z - self.width] = '.'
-                possible_swaps.append((Maze(us, self.goal, self.width, self.height), 1))
-        if z < self.width * (self.height - 1):
-            if self.state[z + self.width] != '#':
-                ds = self.state.copy()
-                ds[z], ds[z + self.width] = ds[z + self.width], ds[z]
-                if ds[z] == 'F':
-                    ds[z] = '.'
-                    if 'F' not in ds:
-                        ds[z + self.width] = '.'
-                possible_swaps.append((Maze(ds, self.goal, self.width, self.height), 1))
+        try:
+            # where is our maze's traveler:
+            z = self.state.index('S')
+            # left possible?
+            if z % self.width > 0:
+                self._get_possible_move(possible_swaps, z, z - 1)
+            # right possible?
+            if z % self.width < (self.width - 1):
+                self._get_possible_move(possible_swaps, z, z + 1)
+            # up possible?
+            if z > self.width - 1:
+                self._get_possible_move(possible_swaps, z, z - self.width)
+            if z < self.width * (self.height - 1):
+                self._get_possible_move(possible_swaps, z, z + self.width)
+        except ValueError:
+            pass
+        if not possible_swaps:
+            print(f"No moves possible in current state (\n{self})\n")
         return possible_swaps
+
+    def _get_possible_move(self, possible_swaps, curr_pos, new_pos):
+        if self.state[new_pos] != '#':
+            ls = self.state.copy()
+            ls[curr_pos], ls[new_pos] = ls[new_pos], ls[curr_pos]
+            if ls[curr_pos] == 'F':
+                ls[curr_pos] = '.'
+                if 'F' not in ls:
+                    ls[new_pos] = '.'
+            possible_swaps.append((Maze(ls, self.goal, self.width, self.height), 1))
 
     def scramble(self, how_long):
         for _ in range(how_long):
@@ -171,6 +158,28 @@ jolly = [
     '.', '.', '.', '.', '.', '.', '.', '.', '.', '#', '.', '.', '.', '.', '.',
 ]
 
+maze = [
+    'F', '.', '#', '.', '.', '#', '.', '.', '#', '.', '.', '.', '.', '.', 'F',
+    '.', '.', '.', '.', '.', '#', '#', '.', '.', '.', '#', '.', '.', '#', '.',
+    '.', '#', '.', '.', '.', '.', '#', '.', '.', '#', '#', '#', '.', '#', '.',
+    '.', '#', '#', '.', '.', '.', '.', '.', '#', '#', '.', '#', '#', '#', '.',
+    '.', '.', '#', '#', '.', '#', '#', '.', '.', '.', '.', '.', '#', '#', '.',
+    '.', '.', '.', '#', '#', '#', '.', '.', '#', '.', '.', '.', '#', '#', '.',
+    '.', '.', '.', '.', '#', '.', '.', '.', '#', '.', '.', '.', '.', '#', '.',
+    'S', '.', '.', '.', '#', 'F', '.', '.', '.', '#', '.', '.', '.', '.', 'F',
+]
+
+jolly = [
+    '.', '.', '#', '.', '.', '#', '.', '.', '#', '.', '.', '.', '.', '.', '.',
+    '.', '.', '.', '.', '.', '#', '#', '.', '.', '.', '#', '.', '.', '#', '.',
+    '.', '#', '.', '.', '.', '.', '#', '.', '.', '#', '#', '#', '.', '#', '.',
+    '.', '#', '#', '.', '.', '.', '.', '.', '#', '#', '.', '#', '#', '#', '.',
+    '.', '.', '#', '#', '.', '#', '#', '.', '.', '.', '.', '.', '#', '#', '.',
+    '.', '.', '.', '#', '#', '#', '.', '.', '#', '.', '.', '.', '#', '#', '.',
+    '.', '.', '.', '.', '#', '.', '.', '.', '#', '.', '.', '.', '.', '#', '.',
+    '.', '.', '.', '.', '#', '.', '.', '.', '.', '#', '.', '.', '.', '.', '.',
+]
+
 
 def inadmissible_heuristic(maze: Maze):
     try:
@@ -188,6 +197,8 @@ def inadmissible_heuristic(maze: Maze):
 
 
 def best_heuristic(maze: Maze):
+    """Cannot be beaten yet, not for a lack of trying. This heuristic is based on the concept of splitting
+    the optimal solution into optimal sub-solutions. (Might have some erroneous edge cases)"""
     try:
         s_location = maze.state.index('S')
         s_row, s_col = s_location // maze.width, s_location % maze.width
@@ -281,7 +292,8 @@ def my_even_simpler_heuristic(maze: Maze):
 
 
 mz = Maze(maze, jolly, 15, 8)
-rez = mz.search(my_even_simpler_heuristic)
+rez = mz.search(best_heuristic)
+# rez = mz.search()
 # if you use me prepare for a wall of text
-# print_path_colorful_show_change_on_prev_board(rez, mz.height,mz.width,2)
+print_path_colorful_show_change_on_prev_board(rez, mz.height,mz.width,2)
 print("Path cost (+1 added since we count nodes not \"hedges\")", len(rez))
